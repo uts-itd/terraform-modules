@@ -1,0 +1,33 @@
+name: Build docs
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - uses: fregante/setup-git-user@v1
+
+      - uses: hashicorp/setup-terraform@v1
+
+      - name: Generate TF docs
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+          output-method: inject
+          git-push: "true"
+          output-file: README.md
+          find-dir: ./
+
+      - name: Format terraform files
+        run: |
+          terraform fmt -recursive .
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Linting terraform files
